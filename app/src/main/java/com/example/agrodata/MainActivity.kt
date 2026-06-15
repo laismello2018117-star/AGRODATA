@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.agrodata.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,8 +57,8 @@ class MainActivity : ComponentActivity() {
 fun HomeScreen(
     onNavigateToLeprose: () -> Unit,
     onNavigateToBichoMineiro: () -> Unit,
-    onNavigateToBroca: () -> Unit,       // ADICIONADO
-    onNavigateToFerrugem: () -> Unit      // ADICIONADO
+    onNavigateToBroca: () -> Unit,
+    onNavigateToFerrugem: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     Scaffold(
@@ -67,8 +68,9 @@ fun HomeScreen(
                     Text(
                         "AgroData",
                         fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp,
-                        color = Color.White
+                        letterSpacing = 1.5.sp,
+                        color = Color.White,
+                        fontSize = 22.sp
                     )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -83,39 +85,74 @@ fun HomeScreen(
                 .padding(innerPadding)
                 .verticalScroll(scrollState)
                 .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
 
             ClimaCardRealTime()
 
-            CardModulo(titulo = "Identificação de Espécie por IA", icon = Icons.Default.AutoAwesome, color = Color(0xFF00796B)) {
+            // 1. IA
+            CardModuloAcessivel(
+                titulo = "Identificação de Espécie por IA",
+                icon = Icons.Default.AutoAwesome,
+                corDestaque = Color(0xFF00796B),
+                descricaoRapida = "Use a câmera para detectar pragas"
+            ) {
                 ScannerIAAgroData()
             }
 
-            CardModulo(titulo = "Mercado Físico", icon = Icons.Default.ShoppingCart, color = Color(0xFF2E7D32)) {
+            // 2. Mercado
+            CardModuloAcessivel(
+                titulo = "Mercado Físico",
+                icon = Icons.Default.ShoppingCart,
+                corDestaque = Color(0xFF2E7D32),
+                descricaoRapida = "Cotações e preços do café atualizados"
+            ) {
                 MercadoFisicoRealTime()
             }
 
-            CardModulo(titulo = "Calculadora de Calagem", icon = Icons.Default.Add, color = Color(0xFFFF2222)) {
+            // 3. Calagem
+            CardModuloAcessivel(
+                titulo = "Calculadora de Calagem",
+                icon = Icons.Default.Add,
+                corDestaque = Color(0xFFD32F2F),
+                descricaoRapida = "Calcule a necessidade de calcário"
+            ) {
                 CalculadoraCalagemCompleta()
             }
 
-            CardModulo(titulo = "Calendário Fenológico", icon = Icons.Default.DateRange, color = Color(0xFF0256BD)) {
+            // 4. Calendário
+            CardModuloAcessivel(
+                titulo = "Calendário Fenológico",
+                icon = Icons.Default.DateRange,
+                corDestaque = Color(0xFF0256BD),
+                descricaoRapida = "Acompanhe as fases da lavoura"
+            ) {
                 TabelaFenologica()
             }
 
-            CardModulo(titulo = "Catálogo Fitossanitário", icon = Icons.Default.Search, color = Color(0xFFD84315)) {
-                // ATUALIZADO: Passando todas as 4 funções de clique para o seu Grid
+            // 5. Catálogo (Passando os 4 parâmetros corrigidos)
+            CardModuloAcessivel(
+                titulo = "Catálogo Fitossanitário",
+                icon = Icons.Default.Search,
+                corDestaque = Color(0xFFE65100),
+                descricaoRapida = "Guia de pragas, doenças e manejos"
+            ) {
                 GridPragas(
                     onLeproseClick = onNavigateToLeprose,
                     onBichoClick = onNavigateToBichoMineiro,
-                    onBrocaClick = onNavigateToBroca,        // ADICIONADO
-                    onFerrugemClick = onNavigateToFerrugem   // ADICIONADO
+                    onBrocaClick = onNavigateToBroca,
+                    onFerrugemClick = onNavigateToFerrugem
                 )
             }
 
-            CardModulo(titulo = "Guia Nutricional Visual", icon = Icons.Default.Info, color = Color(0xFF7B1FA2)) {
+            // 6. Guia Nutricional
+            CardModuloAcessivel(
+                titulo = "Guia Nutricional Visual",
+                icon = Icons.Default.Info,
+                corDestaque = Color(0xFF7B1FA2),
+                descricaoRapida = "Identifique deficiências pelas folhas"
+            ) {
                 GuiaNutricional()
             }
 
