@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,12 +31,24 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
+// ==========================================
+// 1. SCANNER IA AGRODATA (Com Vínculo de Talhão)
+// ==========================================
 @Composable
 fun ScannerIAAgroData() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var resultadoIA by remember { mutableStateOf<PlantResult?>(null) }
     var carregando by remember { mutableStateOf(false) }
+
+    // Gerenciamento local de talhões para a IA
+    val listaTalhoes = remember {
+        mutableStateListOf(
+            Talhao(1, "Talhão do Meio"),
+            Talhao(2, "Talhão da Represa")
+        )
+    }
+    var talhaoSelecionado by remember { mutableStateOf<Talhao?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -58,6 +71,19 @@ fun ScannerIAAgroData() {
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
+        // Seletor de talhão inserido no topo da ferramenta
+        SeletorTalhaoSimples(
+            talhoesDisponiveis = listaTalhoes,
+            talhaoSelecionado = talhaoSelecionado,
+            onTalhaoEscolhido = { talhaoSelecionado = it },
+            onNovoTalhaoCadastrado = { nome ->
+                val novoId = (listaTalhoes.maxOfOrNull { it.id } ?: 0) + 1
+                listaTalhoes.add(Talhao(novoId, nome))
+            }
+        )
+
+        Spacer(Modifier.height(8.dp))
+
         Button(
             onClick = { launcher.launch("image/*") },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF388E3C)),
@@ -84,7 +110,16 @@ fun ScannerIAAgroData() {
                 border = BorderStroke(1.dp, Color(0xFF81C784))
             ) {
                 Column(Modifier.padding(16.dp)) {
-                    Text("Resultado da Análise:", fontWeight = FontWeight.Bold, color = Color(0xFF1B5E20), fontSize = 15.sp)
+                    Text(
+                        text = if (talhaoSelecionado != null) {
+                            "Resultado para: ${talhaoSelecionado!!.nome}"
+                        } else {
+                            "Resultado da Análise:"
+                        },
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1B5E20),
+                        fontSize = 15.sp
+                    )
                     Spacer(Modifier.height(4.dp))
                     Text("Espécie: ${result.species.scientificName}", fontSize = 14.sp, fontWeight = FontWeight.Medium)
                     Text("Confiança: ${String.format("%.1f", result.score * 100)}%", fontSize = 13.sp, color = Color.Gray)
@@ -102,6 +137,9 @@ fun ScannerIAAgroData() {
     }
 }
 
+// ==========================================
+// 2. MONITORAMENTO DE CLIMA EM TEMPO REAL
+// ==========================================
 @Composable
 fun ClimaCardRealTime() {
     val context = LocalContext.current
@@ -186,12 +224,15 @@ fun ClimaCard(temp: Int, umidade: Int, local: String, main: String, desc: String
     }
 }
 
+// ==========================================
+// 3. MERCADO FÍSICO DO CAFÉ
+// ==========================================
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MercadoFisicoRealTime() {
-    val opcoesRegiao = listOf("Café Arábica (B3)" to "ICF", "Café Conilon (B3)" to "CCF")
+    val opcoescRegiao = listOf("Café Arábica (B3)" to "ICF", "Café Conilon (B3)" to "CCF")
     var expandido by remember { mutableStateOf(false) }
-    var selecaoAtual by remember { mutableStateOf(opcoesRegiao[0]) }
+    var selecaoAtual by remember { mutableStateOf(opcoescRegiao[0]) }
     var preco by remember { mutableStateOf("Carregando...") }
     var variacao by remember { mutableStateOf(0.0) }
 
@@ -217,7 +258,7 @@ fun MercadoFisicoRealTime() {
                 modifier = Modifier.menuAnchor().fillMaxWidth()
             )
             ExposedDropdownMenu(expanded = expandido, onDismissRequest = { expandido = false }) {
-                opcoesRegiao.forEach { DropdownMenuItem(text = { Text(it.first, fontWeight = FontWeight.Medium) }, onClick = { selecaoAtual = it; expandido = false }) }
+                opcoescRegiao.forEach { DropdownMenuItem(text = { Text(it.first, fontWeight = FontWeight.Medium) }, onClick = { selecaoAtual = it; expandido = false }) }
             }
         }
         Card(
@@ -252,13 +293,36 @@ fun MercadoFisicoRealTime() {
     }
 }
 
+// ==========================================
+// 4. CALCULADORA DE CALAGEM (Com Vínculo de Talhão)
+// ==========================================
 @Composable
 fun CalculadoraCalagemCompleta() {
     var v1 by remember { mutableStateOf("") }; var v2 by remember { mutableStateOf("70") }
     var ctc by remember { mutableStateOf("") }; var prnt by remember { mutableStateOf("80") }
     var resultado by remember { mutableStateOf<Double?>(null) }
 
+    // Gerenciamento local de talhões para a Calagem
+    val listaTalhoes = remember {
+        mutableStateListOf(
+            Talhao(1, "Talhão do Meio"),
+            Talhao(2, "Talhão da Represa")
+        )
+    }
+    var talhaoSelecionado by remember { mutableStateOf<Talhao?>(null) }
+
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        // Seletor inserido no topo da calculadora
+        SeletorTalhaoSimples(
+            talhoesDisponiveis = listaTalhoes,
+            talhaoSelecionado = talhaoSelecionado,
+            onTalhaoEscolhido = { talhaoSelecionado = it },
+            onNovoTalhaoCadastrado = { nome ->
+                val novoId = (listaTalhoes.maxOfOrNull { it.id } ?: 0) + 1
+                listaTalhoes.add(Talhao(novoId, nome))
+            }
+        )
+
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             OutlinedTextField(v1, { v1 = it }, label = { Text("V1%") }, shape = RoundedCornerShape(10.dp), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f))
             OutlinedTextField(v2, { v2 = it }, label = { Text("V2%") }, shape = RoundedCornerShape(10.dp), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f))
@@ -285,8 +349,9 @@ fun CalculadoraCalagemCompleta() {
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
                 shape = RoundedCornerShape(8.dp)
             ) {
+                val rotuloLocal = if (talhaoSelecionado != null) " p/ ${talhaoSelecionado!!.nome}" else ""
                 Text(
-                    "Necessidade: ${"%.2f".format(it)} t/ha",
+                    "Necessidade${rotuloLocal}: ${"%.2f".format(it)} t/ha",
                     Modifier.padding(12.dp).fillMaxWidth(),
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,
@@ -295,5 +360,127 @@ fun CalculadoraCalagemCompleta() {
                 )
             }
         }
+    }
+}
+
+// ==========================================
+// 5. COMPONENTE INTERFACE: SELETOR DE TALHÃO
+// ==========================================
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SeletorTalhaoSimples(
+    talhoesDisponiveis: List<Talhao>,
+    talhaoSelecionado: Talhao?,
+    onTalhaoEscolhido: (Talhao) -> Unit,
+    onNovoTalhaoCadastrado: (String) -> Unit
+) {
+    var menuExpandido by remember { mutableStateOf(false) }
+    var mostrarDialogoCadastro by remember { mutableStateOf(false) }
+    var novoNomeTalhao by remember { mutableStateOf("") }
+
+    Column(modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)) {
+        Text(
+            text = "Área da Lavoura (Talhão):",
+            fontWeight = FontWeight.Bold,
+            fontSize = 13.sp,
+            color = Color(0xFF424242)
+        )
+        Spacer(Modifier.height(4.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ExposedDropdownMenuBox(
+                expanded = menuExpandido,
+                onExpandedChange = { menuExpandido = !menuExpandido },
+                modifier = Modifier.weight(1f)
+            ) {
+                OutlinedTextField(
+                    value = talhaoSelecionado?.nome ?: "Toque para selecionar...",
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuExpandido) },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF2E7D32),
+                        unfocusedBorderColor = Color(0xFFCFD8DC)
+                    ),
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                )
+
+                ExposedDropdownMenu(
+                    expanded = menuExpandido,
+                    onDismissRequest = { menuExpandido = false },
+                    modifier = Modifier.background(Color.White)
+                ) {
+                    if (talhoesDisponiveis.isEmpty()) {
+                        DropdownMenuItem(
+                            text = { Text("Nenhum talhão cadastrado", color = Color.Gray) },
+                            onClick = { menuExpandido = false }
+                        )
+                    } else {
+                        talhoesDisponiveis.forEach { talhao ->
+                            DropdownMenuItem(
+                                text = { Text(talhao.nome, fontWeight = FontWeight.Medium) },
+                                onClick = {
+                                    onTalhaoEscolhido(talhao)
+                                    menuExpandido = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.width(8.dp))
+
+            Button(
+                onClick = { mostrarDialogoCadastro = true },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier.height(56.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Adicionar Novo Talhão", tint = Color.White)
+            }
+        }
+    }
+
+    if (mostrarDialogoCadastro) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoCadastro = false },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (novoNomeTalhao.isNotBlank()) {
+                            onNovoTalhaoCadastrado(novoNomeTalhao)
+                            novoNomeTalhao = ""
+                            mostrarDialogoCadastro = false
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
+                ) {
+                    Text("Salvar", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarDialogoCadastro = false }) {
+                    Text("Cancelar", color = Color.Gray)
+                }
+            },
+            icon = { Icon(Icons.Default.Landscape, contentDescription = null, tint = Color(0xFF2E7D32)) },
+            title = { Text("Novo Talhão", fontWeight = FontWeight.Bold) },
+            text = {
+                OutlinedTextField(
+                    value = novoNomeTalhao,
+                    onValueChange = { novoNomeTalhao = it },
+                    label = { Text("Nome do Talhão (Ex: Represa)") },
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color(0xFF2E7D32)),
+                    singleLine = true
+                )
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
     }
 }

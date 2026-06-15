@@ -1,3 +1,4 @@
+
 package com.example.agrodata
 
 import androidx.compose.ui.graphics.Color
@@ -14,21 +15,48 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 
-// --- MODELOS DE DADOS ---
-data class ItemCatalogo(val nome: String, val descricao: String, val imagem: Int, val corDestaque: Color = Color(0xFF1B5E20))
-data class DeficienciaNutricional(val elemento: String, val sintoma: String, val imagem: Int)
+// ====================================================================
+// --- MODELOS DE DADOS DO PROJETO ---
+// ====================================================================
+
+// Modelo para segmentação de áreas agrícolas (Agricultura de Precisão / Indústria 4.0)
+data class Talhao(
+    val id: Int,
+    val nome: String
+)
+
+data class ItemCatalogo(
+    val nome: String,
+    val descricao: String,
+    val imagem: Int,
+    val corDestaque: Color = Color(0xFF1B5E20)
+)
+
+data class DeficienciaNutricional(
+    val elemento: String,
+    val sintoma: String,
+    val imagem: Int
+)
+
+// --- MODELOS OPENWEATHER MAP ---
 data class WeatherResponse(val main: MainDataApi, val name: String, val weather: List<WeatherDetails>)
 data class WeatherDetails(val main: String, val description: String)
 data class MainDataApi(val temp: Double, val humidity: Int)
+
+// --- MODELOS BRAPI (Mercado Físico do Café) ---
 data class BrapiResponse(val results: List<StockResult>)
 data class StockResult(val symbol: String, val regularMarketPrice: Double, val regularMarketChangePercent: Double)
 
-// --- MODELOS PL@NTNET ---
+// --- MODELOS PL@NTNET (Identificação por IA) ---
 data class PlantNetResponse(val results: List<PlantResult>)
 data class PlantResult(val score: Double, val species: Species)
 data class Species(val scientificName: String, val commonNames: List<String>?)
 
-// --- SERVIÇOS API ---
+
+// ====================================================================
+// --- SERVIÇOS API (Retrofit Interfaces) ---
+// ====================================================================
+
 interface WeatherService {
     @GET("data/2.5/weather")
     suspend fun getWeather(
@@ -57,29 +85,46 @@ interface PlantNetService {
     ): PlantNetResponse
 }
 
-// --- CLIENTES RETROFIT ---
+
+// ====================================================================
+// --- CLIENTES RETROFIT (Singletons) ---
+// ====================================================================
+
 object RetrofitClient {
     val service: WeatherService by lazy {
-        Retrofit.Builder().baseUrl("https://api.openweathermap.org/")
-            .addConverterFactory(GsonConverterFactory.create()).build().create(WeatherService::class.java)
+        Retrofit.Builder()
+            .baseUrl("https://api.openweathermap.org/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(WeatherService::class.java)
     }
 }
 
 object RetrofitMercado {
     val service: MercadoService by lazy {
-        Retrofit.Builder().baseUrl("https://brapi.dev/")
-            .addConverterFactory(GsonConverterFactory.create()).build().create(MercadoService::class.java)
+        Retrofit.Builder()
+            .baseUrl("https://brapi.dev/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(MercadoService::class.java)
     }
 }
 
 object RetrofitPlantNet {
     val service: PlantNetService by lazy {
-        Retrofit.Builder().baseUrl("https://my-api.plantnet.org/v2/")
-            .addConverterFactory(GsonConverterFactory.create()).build().create(PlantNetService::class.java)
+        Retrofit.Builder()
+            .baseUrl("https://my-api.plantnet.org/v2/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(PlantNetService::class.java)
     }
 }
 
-// --- FUNÇÕES AUXILIARES ---
+
+// ====================================================================
+// --- FUNÇÕES AUXILIARES DE SUPORTE ---
+// ====================================================================
+
 fun getDescricaoTraduzida(main: String, description: String): String {
     return when {
         main.contains("Thunderstorm", ignoreCase = true) -> "Tempestade"
