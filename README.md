@@ -1,30 +1,24 @@
-Markdown
-# AgroData - Catálogo & Gestão Fitossanitária do Cafeeiro
+AgroData Café
 
-O **AgroData** é um aplicativo móvel voltado para o monitoramento e manejo integrado de pragas, doenças e deficiências nutricionais na cafeicultura. Unindo conceitos de tecnologia da informação e o setor agronômico, o app serve como um assistente de campo para produtores rurais tomarem decisões estratégicas de controle e amostragem.
+O AgroData Café é um aplicativo Android de apoio à decisão para pequenos e médios cafeicultores. Ele reúne, em um só lugar, informações que hoje ficam espalhadas: clima, preço do café, pragas e doenças, nutrição da planta e manejo do solo.
 
----
+Projeto desenvolvido como Trabalho de Conclusão de Curso (TCC).
 
-## Funcionalidades Principais
+Funcionalidades
+Scanner com IA: a partir de uma foto, identifica a espécie da planta e sugere o diagnóstico de doenças, pragas e deficiências nutricionais do cafeeiro.
+Clima e alertas: temperatura, umidade, sensação térmica e vento pela localização do aparelho, com alertas ligados ao manejo (risco de geada, tempestade, calor na florada e ar seco).
+Mercado físico: indicadores do café arábica e robusta do CEPEA/ESALQ, exibidos pelo widget oficial e atualizados diariamente.
+Calculadora de calagem: necessidade de calcário pelo método da saturação por bases, com o total para a área de cada talhão.
+Calendário fenológico: seis fases do ciclo do café arábica, com a fase atual em destaque, manejos recomendados e pontos de atenção.
+Catálogo fitossanitário: 12 fichas de pragas e doenças (danos, condições favoráveis e manejo integrado).
+Guia nutricional visual: 9 nutrientes (N, P, K, Ca, Mg, S, B, Zn e Fe), com sintomas, causas e correção.
+Talhões: cadastro das áreas da lavoura com nome e área, compartilhado entre o scanner e a calculadora, com histórico de análises.
+Como funciona o scanner
+Confirmação da espécie: a foto é enviada ao Pl@ntNet. Se a planta não for do gênero Coffea, o app avisa o usuário e a análise termina ali.
+Diagnóstico: fotos de café são enviadas ao crop.health, que sugere até três possíveis problemas com a probabilidade de cada um.
+Orientação: quando o diagnóstico corresponde a uma ficha do app, o usuário abre a ficha em português com danos e manejo. O resultado fica salvo no histórico do talhão.
 
-* **Catálogo Fitossanitário:** Informações detalhadas sobre o ciclo, danos, condições favoráveis e estratégias de Manejo Integrado de Pragas (MIP) para:
-    * Ácaro-da-leprose *(Brevipalpus yandeli)*
-    * Bicho-mineiro *(Leucoptera coffeella)*
-    * Broca-do-café *(Hypothenemus hampei)*
-    * Ferrugem-do-cafeeiro *(Hemileia vastatrix)*
-* **Calendário Fenológico:** Acompanhamento visual das fases da cultura (Floração, Chumbinho, Expansão, Maturação e Colheita).
-* **Guia Nutricional Visual:** Identificação de sintomas visuais de deficiências de macronutrientes e micronutrientes (N, P, K, Mg, B, S, Ca).
-* **Ferramentas de Campo:** Calculadora de calagem e módulos de monitoramento em tempo real (Clima e Mercado Físico).
-
----
-
-## Tecnologias Utilizadas
-
-* **Linguagem:** Kotlin
-* **Interface Gráfica:** Jetpack Compose (Material Design 3)
-* **Navegação:** Jetpack Navigation Compose (Arquitetura unificada de rotas)
-* **Gerenciador de Dependências:** Gradle (Kotlin DSL)
-
+Antes do envio, a imagem é redimensionada e tem a rotação corrigida, para reduzir o consumo de internet no campo. O diagnóstico é apresentado como sugestão e deve ser confirmado por um engenheiro agrônomo.
 ---
 ## APIs e Serviços Utilizados
 
@@ -38,16 +32,45 @@ O **AgroData** é um aplicativo móvel voltado para o monitoramento e manejo int
 - **Mercado:** indicadores do café arábica e robusta exibidos pelo widget oficial do
   [CEPEA/ESALQ-USP](https://www.cepea.org.br/).
 
-## Estrutura de Arquivos do Projeto
+Como executar o projeto
+Clone o repositório e abra a pasta no Android Studio.
+Na raiz do projeto, crie ou edite o arquivo local.properties e adicione as chaves das APIs:
+properties
+   PLANTNET_API_KEY=sua_chave_do_plantnet
+   WEATHER_API_KEY=sua_chave_do_openweather
+   CROP_HEALTH_API_KEY=sua_chave_do_crop_health
 
-Abaixo está a organização principal dos componentes customizados de interface desenvolvidos:
+As chaves são obtidas gratuitamente em my.plantnet.org, openweathermap.org e no painel da Kindwise. O local.properties não deve ser enviado ao repositório. 3. Clique em Sync Now e depois em Build > Assemble Project. 4. Execute o app em um aparelho ou emulador com Android 7.0 (API 24) ou superior.
 
-```text
+Estrutura do projeto
 app/src/main/java/com/example/agrodata/
 │
-├── MainActivity.kt          # Inicialização, fluxo de rotas (NavHost) e HomeScreen
-├── TelasFerramentas.kt      # Componentes globais (GridPragas, TabelaFenologica, GuiaNutricional)
-├── ui.theme/                # Configurações globais de estilos, tipografia e cores
-│   ├── Color.kt
-│   ├── Theme.kt
-│   └── Type.kt
+├── MainActivity.kt            # Tela inicial e navegação entre telas
+├── CardModulo.kt              # Card expansível de cada módulo
+│
+├── ScannerScreen.kt           # Tela do scanner, resultados e histórico
+├── ScannerViewModel.kt        # Fluxo de identificação e diagnóstico
+├── PlantNetApi.kt             # Integração com o Pl@ntNet
+├── CropHealthApi.kt           # Integração com o crop.health
+├── DiagnosticoCatalogo.kt     # Liga o diagnóstico às fichas do app e traduz os resultados
+├── NomesPopulares.kt          # Nomes populares em português
+├── ImagemUtils.kt             # Redimensionamento e preparo das fotos
+│
+├── AnaliseDatabase.kt         # Banco Room: talhões e histórico de análises
+├── TalhaoViewModel.kt         # Talhões compartilhados entre os módulos
+│
+├── ModulosFerramentas.kt      # Clima, mercado e seletor de talhão
+├── CalculadoraCalagem.kt      # Calculadora de calagem
+├── TabelaFenologica.kt        # Calendário fenológico
+├── ModulosInfo.kt             # Catálogo de pragas e guia nutricional (listas)
+├── CatalogoPragas.kt          # Conteúdo das fichas de pragas e doenças
+├── CatalogoNutrientes.kt      # Conteúdo das fichas de nutrientes
+├── TelasDetalhes.kt           # Tela de detalhes de pragas e doenças
+├── TelaDetalheNutriente.kt    # Tela de detalhes de nutrientes
+├── Agrodatamodel.kt           # Modelos e cliente da API de clima
+│
+└── ui/theme/                  # Cores, tipografia e tema
+Avisos
+Os diagnósticos do scanner são sugestões geradas por inteligência artificial e não substituem a avaliação de um engenheiro agrônomo.
+O conteúdo técnico do calendário, do catálogo e do guia nutricional está em processo de validação com o material da Embrapa Café.
+Os indicadores do Cepea são preços de referência. O valor pago ao produtor varia conforme a região e a qualidade do café.
