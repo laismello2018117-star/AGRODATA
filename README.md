@@ -26,6 +26,17 @@ O **AgroData** é um aplicativo móvel voltado para o monitoramento e manejo int
 * **Gerenciador de Dependências:** Gradle (Kotlin DSL)
 
 ---
+## APIs e Serviços Utilizados
+
+- **Diagnóstico de doenças, pragas e deficiências:** o scanner do AgroData usa a API
+  [crop.health](https://www.kindwise.com/crop-health), da [Kindwise](https://www.kindwise.com),
+  para identificar problemas fitossanitários a partir de fotos das folhas do cafeeiro.
+- **Identificação da espécie:** a identificação de plantas por imagem é baseada na API
+  [Pl@ntNet](https://my.plantnet.org/), usada para confirmar que a foto é de um cafeeiro
+  antes do diagnóstico.
+- **Clima:** dados meteorológicos fornecidos pela [OpenWeather](https://openweathermap.org/).
+- **Mercado:** indicadores do café arábica e robusta exibidos pelo widget oficial do
+  [CEPEA/ESALQ-USP](https://www.cepea.org.br/).
 
 ## Estrutura de Arquivos do Projeto
 
