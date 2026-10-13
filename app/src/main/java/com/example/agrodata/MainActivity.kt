@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.agrodata.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,16 +34,20 @@ class MainActivity : ComponentActivity() {
                     NavHost(navController = navController, startDestination = "home") {
                         composable("home") {
                             HomeScreen(
-                                onNavigateToLeprose = { navController.navigate("leprose") },
-                                onNavigateToBichoMineiro = { navController.navigate("bicho_mineiro") },
-                                onNavigateToBroca = { navController.navigate("broca_cafe") },       // ADICIONADO
-                                onNavigateToFerrugem = { navController.navigate("ferrugem") }      // ADICIONADO
+                                onPragaClick = { id -> navController.navigate("praga/$id") },
+                                onNutrienteClick = { id -> navController.navigate("nutriente/$id") }
                             )
                         }
-                        composable("leprose") { AcaroLeprose(onBack = { navController.popBackStack() }) }
-                        composable("bicho_mineiro") { BichoMineiro(onBack = { navController.popBackStack() }) }
-                        composable("broca_cafe") { BrocaCafe(onBack = { navController.popBackStack() }) }       // ADICIONADO
-                        composable("ferrugem") { Ferrugem(onBack = { navController.popBackStack() }) }           // ADICIONADO
+                        // Uma única rota para todas as pragas e doenças do catálogo
+                        composable("praga/{id}") { entrada ->
+                            val id = entrada.arguments?.getString("id").orEmpty()
+                            TelaDetalhePraga(idPraga = id, onBack = { navController.popBackStack() })
+                        }
+                        // Uma única rota para todos os nutrientes do Guia Nutricional
+                        composable("nutriente/{id}") { entrada ->
+                            val id = entrada.arguments?.getString("id").orEmpty()
+                            TelaDetalheNutriente(idNutriente = id, onBack = { navController.popBackStack() })
+                        }
                     }
                 }
             }
@@ -55,10 +58,8 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onNavigateToLeprose: () -> Unit,
-    onNavigateToBichoMineiro: () -> Unit,
-    onNavigateToBroca: () -> Unit,
-    onNavigateToFerrugem: () -> Unit
+    onPragaClick: (String) -> Unit,
+    onNutrienteClick: (String) -> Unit
 ) {
     val scrollState = rememberScrollState()
     Scaffold(
@@ -98,7 +99,14 @@ fun HomeScreen(
                 corDestaque = Color(0xFF00796B),
                 descricaoRapida = "Use a câmera para detectar pragas"
             ) {
-                ScannerIAAgroData()
+                ScannerIAAgroData(
+                    onAbrirFicha = { ficha ->
+                        when (ficha.tipo) {
+                            TipoFicha.PRAGA -> onPragaClick(ficha.id)
+                            TipoFicha.NUTRIENTE -> onNutrienteClick(ficha.id)
+                        }
+                    }
+                )
             }
 
             // 2. Mercado
@@ -131,19 +139,14 @@ fun HomeScreen(
                 TabelaFenologica()
             }
 
-            // 5. Catálogo (Passando os 4 parâmetros corrigidos)
+            // 5. Catálogo
             CardModuloAcessivel(
                 titulo = "Catálogo Fitossanitário",
                 icon = Icons.Default.Search,
                 corDestaque = Color(0xFFE65100),
                 descricaoRapida = "Guia de pragas, doenças e manejos"
             ) {
-                GridPragas(
-                    onLeproseClick = onNavigateToLeprose,
-                    onBichoClick = onNavigateToBichoMineiro,
-                    onBrocaClick = onNavigateToBroca,
-                    onFerrugemClick = onNavigateToFerrugem
-                )
+                GridPragas(onPragaClick = onPragaClick)
             }
 
             // 6. Guia Nutricional
@@ -153,7 +156,7 @@ fun HomeScreen(
                 corDestaque = Color(0xFF7B1FA2),
                 descricaoRapida = "Identifique deficiências pelas folhas"
             ) {
-                GuiaNutricional()
+                GuiaNutricional(onNutrienteClick = onNutrienteClick)
             }
 
             Spacer(Modifier.height(24.dp))

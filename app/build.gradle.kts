@@ -1,6 +1,15 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp) // necessário para o Room
+}
+
+// Lê as chaves das APIs do local.properties (arquivo que não vai para o Git)
+val props = Properties().apply {
+    val arquivo = rootProject.file("local.properties")
+    if (arquivo.exists()) arquivo.inputStream().use { load(it) }
 }
 
 android {
@@ -15,6 +24,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Chaves das APIs, acessadas no código por BuildConfig.NOME
+        buildConfigField("String", "PLANTNET_API_KEY", "\"${props.getProperty("PLANTNET_API_KEY", "")}\"")
+        buildConfigField("String", "WEATHER_API_KEY", "\"${props.getProperty("WEATHER_API_KEY", "")}\"")
+        buildConfigField("String", "BRAPI_TOKEN", "\"${props.getProperty("BRAPI_TOKEN", "")}\"")
+        buildConfigField("String", "CROP_HEALTH_API_KEY", "\"${props.getProperty("CROP_HEALTH_API_KEY", "")}\"")
     }
 
     buildTypes {
@@ -31,6 +46,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -39,6 +55,7 @@ dependencies {
     implementation(platform("androidx.compose:compose-bom:2024.02.01"))
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0") // viewModel() no Compose
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
@@ -51,8 +68,13 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0") // Necessário para Multipart (IA)
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
+    // Banco de dados local (histórico do scanner, funciona offline)
+    implementation("androidx.room:room-runtime:2.8.4")
+    implementation("androidx.room:room-ktx:2.8.4")
+    ksp("androidx.room:room-compiler:2.8.4")
+
     // Localização (Clima)
-    implementation("com.google.android.gms:play-services-location:21.1.0")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 
     // Ícones e Navegação
     implementation("androidx.compose.material:material-icons-extended")
